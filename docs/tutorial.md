@@ -1,4 +1,4 @@
-# Netty Socket io
+# 🌟 Netty Socket.io Tutorial
 
 <p>
   <img src= "https://user-images.githubusercontent.com/82090641/167614453-fe0777e1-0250-479b-a24d-b2532f2c5cae.jpg" width="340">
@@ -23,7 +23,7 @@
 
 #### 하지만 역시 Node.js 기반이라 Spring boot + Socket io에 대한 자료가 매우 부족했다.
 
-#### 그래도 간단한 채팅 프로젝트 같은 자료가 몇개 찾아서 개발할 수 있었다.
+#### 그래도 간단한 채팅 프로젝트 자료를 몇 개 찾아서 개발을 해볼 수 있었다.
 
 ------
 
@@ -40,17 +40,17 @@ implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
 #### SocketConfig 설정을 통해 다양한 옵션을 선택할 수 있다.
 
 ```java
-	private final SocketIoProperties properties;
+private final SocketIoProperties properties;
 
-    @Bean
-    public SocketIOServer socketIOServer() {
-        com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
-        SocketConfig socketConfig = new SocketConfig();
-        config.setSocketConfig(socketConfig);
-        config.setHostname(properties.getHost());
-        config.setPort(properties.getPort());
-        return new SocketIOServer(config);
-    }
+@Bean
+public SocketIOServer socketIOServer() {
+    com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
+    SocketConfig socketConfig = new SocketConfig();
+    config.setSocketConfig(socketConfig);
+    config.setHostname(properties.getHost());
+    config.setPort(properties.getPort());
+    return new SocketIOServer(config);
+}
 ```
 
 ### 3. Start와 Stop
@@ -60,36 +60,37 @@ implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
 #### 서버가 열리고 닫힐 때만 실행되게끔 @PostConstruct와 @PreDestroy를 사용해 만들어준다.
 
 ```java
- 	@PostConstruct
-    private void start() {
-        socketIOServer.addConnectListener(connectListener);
-        socketIOServer.addDisconnectListener(disconnectListener);
-        socketIOServer.start();
-    }
+@PostConstruct
+private void start() {
+    socketIOServer.addConnectListener(connectListener);
+    socketIOServer.addDisconnectListener(disconnectListener);
+    socketIOServer.start();
+}
 
-    @PreDestroy
-    private void stop() {
-        if (socketIOServer != null) {
-            socketIOServer.stop();
-        }
+@PreDestroy
+private void stop() {
+    if (socketIOServer != null) {
+        socketIOServer.stop();
     }
+}
 ```
 
 - #### Connect & Disconnect
 
 ```java
-    public static final Map<String, SocketIOClient> connectMap = new ConcurrentHashMap<>();
+public static final Map<String, SocketIOClient> connectMap = new ConcurrentHashMap<>();
 
-	private final ConnectListener connectListener = client -> {
+private final ConnectListener connectListener = client -> {
         String username = client.getHandshakeData().getSingleUrlParam("username");
-        connectMap.put(username, client);
-        client.set("username", username);
-    };
-    private final DisconnectListener disconnectListener = client -> {
-        String username = client.getHandshakeData().getSingleUrlParam("username");
-        connectMap.remove(username);
-        client.disconnect();
-    };
+        connectMap.put(username,client);
+        client.set("username",username);
+};
+
+private final DisconnectListener disconnectListener = client -> {
+    String username = client.getHandshakeData().getSingleUrlParam("username");
+    connectMap.remove(username);
+    client.disconnect();
+};
 ```
 
 #### Event Data의 UrlParameter로 값을 불러와 client를 ConnectMap에 등록해준다.
@@ -111,14 +112,14 @@ namespace = server.addNamespace("/chat");
 #### 메인 개발 단계인 Event 부분이다.
 
 ```java
-    @Autowired
-    public ChatController(SocketIOServer server) {
-        namespace = server.addNamespace("/chat");
-        namespace.addEventListener("send", ChatMessage.class, onMessage());
-        namespace.addEventListener("userJoin", EventMessage.class, onJoin());
-        namespace.addEventListener("userTyping", EventMessage.class, onTyping());
-        namespace.addEventListener("userStopTyping", EventMessage.class, onStopTyping());
-    }
+@Autowired
+public ChatController(SocketIOServer server) {
+    namespace = server.addNamespace("/chat");
+    namespace.addEventListener("send", ChatMessage.class, onMessage());
+    namespace.addEventListener("userJoin", EventMessage.class, onJoin());
+    namespace.addEventListener("userTyping", EventMessage.class, onTyping());
+    namespace.addEventListener("userStopTyping", EventMessage.class, onStopTyping());
+}
 
 ```
 
@@ -131,12 +132,12 @@ namespace = server.addNamespace("/chat");
 - #### 세번째 Args는 Event 구현이다.
 
 ```java
-	private DataListener<ChatMessage> onMessage() {
-        return (client, data, ackSender) -> {
-            namespace.getBroadcastOperations().sendEvent("newMessage", client, data);
-            messageRepository.save(data);
-        };
-    }
+private DataListener<ChatMessage> onMessage() {
+    return (client, data, ackSender) -> {
+        namespace.getBroadcastOperations().sendEvent("newMessage", client, data);
+        messageRepository.save(data);
+    };
+}
 ```
 
 #### Event가 호출되면 client와 data, ackSender가 들어오게 되는데
@@ -226,6 +227,4 @@ public interface ClientOperations {
 }
 ```
 
-#### 간단하게 Spring boot + Netty Socket io에 대해 알아보았다.
-
-#### Socket에 대해선 더 열심히 공부해야겠다.
+#### 간단하게 Spring boot + Netty Socket io에 대해 알아보았다 :)
